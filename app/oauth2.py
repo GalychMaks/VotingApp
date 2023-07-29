@@ -4,7 +4,6 @@ from datetime import datetime, timedelta
 from . import schemas
 from fastapi import Depends, status, HTTPException
 
-
 from .config import setting
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
@@ -44,4 +43,3 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
                                           detail="Could not validate credentials",
                                           headers={"WWW-Authenticate": "Bearer"})
     return verify_access_token(token, credentials_exception)
-

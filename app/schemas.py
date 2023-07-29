@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, List
 from pydantic import BaseModel, EmailStr
 from datetime import datetime
 
@@ -16,11 +16,25 @@ class User(BaseModel):
 class GetUserResponse(BaseModel):
     id: int
     email: EmailStr
-
     created_at: datetime
 
-    class Config:
-        from_attributes = True
+
+class Answer(BaseModel):
+    answer: str
+    count: Optional[int]
+
+
+class GetPollResponse(BaseModel):
+    poll_id: int
+    owner_id: int
+    question: str
+    created_at: datetime
+    answers: List[Answer]
+
+
+class CreatePoll(BaseModel):
+    question: str
+    answers: List[str]
 
 
 class Token(BaseModel):
