@@ -32,7 +32,8 @@ def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
 
 
 @router.delete("/{user_id}")
-def delete_user(user_id: int, db: Session = Depends(get_db),
+def delete_user(user_id: int,
+                db: Session = Depends(get_db),
                 current_user: schemas.TokenData = Depends(oauth2.get_current_user)):
     if user_id != int(current_user.id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,

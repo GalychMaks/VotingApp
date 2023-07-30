@@ -1,4 +1,4 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, HTTPException, Response
 from sqlalchemy import func
 from .. import schemas, models, oauth2
 from sqlalchemy.orm import Session
@@ -75,7 +75,7 @@ def get_poll(poll_id: int, db: Session = Depends(get_db)):
     return results_as_dict
 
 
-@router.post("/", status_code=status.HTTP_201_CREATED)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.GetPollResponse)
 def create_poll(poll: schemas.CreatePoll,
                 db: Session = Depends(get_db),
                 current_user: schemas.TokenData = Depends(oauth2.get_current_user)):
@@ -104,7 +104,24 @@ def create_poll(poll: schemas.CreatePoll,
 # def update_poll(poll_id: int, db: Session = Depends(get_db)):
 #     pass
 #
-#
-# @router.delete("/{poll_id}")
-# def delete_poll(poll_id: int, db: Session = Depends(get_db)):
-#     pass
+
+@router.delete("/{poll_id}")
+def delete_poll(poll_id: int,
+                db: Session = Depends(get_db),
+                current_user: schemas.TokenData = Depends(oauth2.get_current_user)):
+    poll_query = db.query(models.Poll).filter(models.Poll.id == poll_id)
+
+    poll = poll_query.first()
+
+    if poll is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Poll with id: {poll_id} was not found")
+
+    if poll.owner_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="Not authorized to perform request action")
+
+    poll_query.delete(synchronize_session=False)
+    db.commit()
+
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
