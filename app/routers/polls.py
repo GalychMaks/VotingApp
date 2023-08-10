@@ -70,6 +70,10 @@ def get_poll(poll_id: int, db: Session = Depends(get_db)):
         models.Poll.id, models.Poll.title, models.Poll.owner_id, models.Poll.created_at
     ).filter(models.Poll.id == poll_id).first()
 
+    if results is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail=f"Poll with id: {poll_id} was not found")
+
     results_as_dict = results._asdict()
 
     return results_as_dict
